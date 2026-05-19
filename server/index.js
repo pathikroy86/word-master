@@ -1,8 +1,10 @@
-const cors = require("cors");
-const dns = require("dns");
-const dotenv = require("dotenv");
-const express = require("express");
-const { MongoClient, ObjectId } = require("mongodb");
+import cors from "cors";
+import dns from "dns";
+import dotenv from "dotenv";
+import express from "express";
+import { MongoClient, ObjectId } from "mongodb";
+import { toNodeHandler } from "better-auth/node";
+import { auth } from "./auth.js";
 
 dotenv.config();
 
@@ -13,12 +15,14 @@ if (process.env.DNS_SERVERS) {
 const app = express();
 const port = Number(process.env.PORT || 4000);
 const mongoUri = process.env.MONGODB_URI;
+const webOrigin = process.env.WEB_ORIGIN || "http://localhost:3000";
 
 if (!mongoUri) {
   throw new Error("MONGODB_URI is required. Add it to .env before starting the server.");
 }
 
-app.use(cors({ origin: process.env.WEB_ORIGIN || "http://localhost:3000" }));
+app.use(cors({ origin: webOrigin, credentials: true }));
+app.all("/api/auth/{*any}", toNodeHandler(auth));
 app.use(express.json());
 
 const client = new MongoClient(mongoUri);
@@ -26,6 +30,16 @@ let collectionPromise;
 
 const synonymKeys = ["synonyms", "synonym", "syn", "similar", "similarWords"];
 const antonymKeys = ["antonyms", "antonym", "ant", "opposites", "oppositeWords"];
+
+function normalizeStatusValue(value) {
+  const status = String(value || "new")
+    .toLowerCase()
+    .replace("learned", "mastered")
+    .replace("known", "mastered")
+    .replace("review", "learning");
+
+  return ["new", "learning", "mastered"].includes(status) ? status : "new";
+}
 
 function toArray(value) {
   if (!value) return [];
@@ -60,9 +74,7 @@ function normalizeWord(doc, index = 0) {
   );
   const synonyms = toArray(pick(doc, synonymKeys));
   const antonyms = toArray(pick(doc, antonymKeys));
-  const status = String(pick(doc, ["status", "mastery", "stage"], index % 5 === 0 ? "mastered" : index % 3 === 0 ? "learning" : "new"))
-    .toLowerCase()
-    .replace("learned", "mastered");
+  const status = normalizeStatusValue(pick(doc, ["status", "mastery", "stage"], "new"));
 
   return {
     id: String(doc._id),
@@ -78,6 +90,50 @@ function normalizeWord(doc, index = 0) {
     status,
     frequencyRank: Number(pick(doc, ["frequencyRank", "rank", "serial", "index"], index + 1)),
     raw: doc
+  };
+}
+
+function normalizeWordInput(body) {
+  const word = String(body.word || "").trim();
+  const meaningEn = String(body.meaning_en || body.meaning || "").trim();
+  const meaningBn = String(body.meaning_bn || body.bangla || "").trim();
+  const synonyms = toArray(body.synonyms);
+  const antonyms = toArray(body.antonyms);
+
+  if (!word) {
+    return { error: "Word is required." };
+  }
+
+  if (!meaningEn) {
+    return { error: "English meaning is required." };
+  }
+
+  if (!meaningBn) {
+    return { error: "Bangla meaning is required." };
+  }
+
+  if (!synonyms.length) {
+    return { error: "At least one synonym is required." };
+  }
+
+  if (!antonyms.length) {
+    return { error: "At least one antonym is required." };
+  }
+
+  return {
+    doc: {
+      word,
+      meaning_en: meaningEn,
+      meaning_bn: meaningBn,
+      synonyms,
+      antonyms,
+      partOfSpeech: String(body.partOfSpeech || body.pos || "").trim() || "adjective",
+      pronunciation: String(body.pronunciation || "").trim(),
+      example: String(body.example || "").trim(),
+      status: normalizeStatusValue(body.status || "new"),
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }
   };
 }
 
@@ -136,7 +192,7 @@ async function getCollection() {
 
 async function loadWords() {
   const collection = await getCollection();
-  const docs = await collection.find({}).limit(3000).toArray();
+  const docs = await collection.find({}).toArray();
   return docs.map(normalizeWord);
 }
 
@@ -163,7 +219,7 @@ function filterWords(words, query) {
   }
 
   if (status !== "all") {
-    results = results.filter((item) => item.status === status);
+    results = results.filter((item) => item.status === normalizeStatusValue(status));
   }
 
   return results.sort((a, b) => {
@@ -176,7 +232,7 @@ function filterWords(words, query) {
 app.get("/api/health", async (_req, res) => {
   try {
     const collection = await getCollection();
-    const count = await collection.estimatedDocumentCount();
+    const count = await collection.countDocuments();
     res.json({
       ok: true,
       database: collection.dbName,
@@ -227,22 +283,42 @@ app.get("/api/words/:id", async (req, res) => {
   }
 });
 
+app.post("/api/words", async (req, res) => {
+  try {
+    const parsed = normalizeWordInput(req.body || {});
+    if (parsed.error) return res.status(400).json({ error: parsed.error });
+
+    const collection = await getCollection();
+    const existing = await collection.findOne({ word: new RegExp(`^${parsed.doc.word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") });
+    if (existing) {
+      return res.status(409).json({ error: "This word already exists." });
+    }
+
+    const result = await collection.insertOne(parsed.doc);
+    const inserted = await collection.findOne({ _id: result.insertedId });
+    res.status(201).json(normalizeWord(inserted));
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.get("/api/stats", async (_req, res) => {
   try {
     const words = await loadWords();
     const total = words.length;
     const mastered = words.filter((item) => item.status === "mastered").length;
-    const learning = words.filter((item) => item.status === "learning" || item.status === "review").length;
+    const learning = words.filter((item) => item.status === "learning").length;
     const newWords = Math.max(total - mastered - learning, 0);
+    const reviewed = mastered + learning;
 
     res.json({
       total,
       mastered,
       learning,
       new: newWords,
-      learned: mastered + learning,
-      accuracy: total ? Math.round((mastered / total) * 100) : 0,
-      dueToday: Math.min(52, learning + newWords),
+      learned: mastered,
+      accuracy: reviewed ? Math.round((mastered / reviewed) * 100) : 0,
+      dueToday: learning,
       streak: 7
     });
   } catch (error) {
@@ -254,7 +330,7 @@ app.post("/api/words/:id/review", async (req, res) => {
   try {
     const collection = await getCollection();
     const { id } = req.params;
-    const status = String(req.body.status || "learning").toLowerCase();
+    const status = normalizeStatusValue(req.body.status || "learning");
 
     if (!ObjectId.isValid(id)) {
       return res.status(400).json({ error: "Review updates require a MongoDB ObjectId." });
