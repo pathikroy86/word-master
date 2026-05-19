@@ -1,0 +1,29 @@
+{
+  "name": "create-some-figma-designs-of-gre",
+  "version": "1.0.0",
+  "description": "GRE WordMaster app with Next.js frontend, Express backend, and MongoDB database.",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:web\"",
+    "dev:server": "node --watch server/index.js",
+    "dev:web": "next dev web -p 3000",
+    "build": "next build web",
+    "start": "concurrently \"npm run start:server\" \"npm run start:web\"",
+    "start:server": "node server/index.js",
+    "start:web": "next start web -p 3000"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "concurrently": "^9.2.1",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "lucide-react": "^1.16.0",
+    "mongodb": "^7.2.0",
+    "next": "^16.2.6",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6"
+  }
+}

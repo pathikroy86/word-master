@@ -1,0 +1,818 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>GRE Word List UI Designs</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --ink: #17212b;
+        --muted: #667085;
+        --line: #d9e0e8;
+        --soft: #f4f7fb;
+        --panel: #ffffff;
+        --teal: #127c79;
+        --teal-weak: #d9f1ee;
+        --coral: #d9583f;
+        --coral-weak: #fde6df;
+        --gold: #b7791f;
+        --gold-weak: #fff1c7;
+        --blue: #315fbc;
+        --blue-weak: #e4ecff;
+        --shadow: 0 18px 48px rgba(23, 33, 43, 0.12);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: #e8edf3;
+        color: var(--ink);
+        font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      .page {
+        min-height: 100vh;
+        padding: 36px;
+      }
+
+      .intro {
+        max-width: 1180px;
+        margin: 0 auto 28px;
+      }
+
+      .intro h1 {
+        margin: 0 0 8px;
+        font-size: 30px;
+        letter-spacing: 0;
+      }
+
+      .intro p {
+        max-width: 760px;
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .boards {
+        display: grid;
+        gap: 34px;
+        justify-items: center;
+      }
+
+      .board-label {
+        width: min(100%, 1180px);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: -20px;
+        color: #475467;
+        font-size: 13px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .artboard {
+        background: #f8fafc;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      .desktop {
+        width: 1180px;
+        min-height: 760px;
+        display: grid;
+        grid-template-columns: 252px 1fr 322px;
+      }
+
+      .sidebar {
+        background: #12212b;
+        color: #f8fafc;
+        padding: 26px 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 26px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 800;
+        font-size: 20px;
+      }
+
+      .brand-mark {
+        width: 38px;
+        height: 38px;
+        display: grid;
+        place-items: center;
+        border-radius: 8px;
+        background: var(--teal);
+      }
+
+      .nav {
+        display: grid;
+        gap: 8px;
+      }
+
+      .nav button,
+      .icon-button,
+      .primary,
+      .ghost,
+      .segmented button,
+      .chip,
+      .tab {
+        border: 0;
+        font: inherit;
+      }
+
+      .nav button {
+        min-height: 44px;
+        border-radius: 8px;
+        padding: 0 12px;
+        background: transparent;
+        color: #b8c4cf;
+        text-align: left;
+        font-weight: 650;
+      }
+
+      .nav .active {
+        background: #223645;
+        color: #fff;
+      }
+
+      .sidebar-card {
+        margin-top: auto;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 8px;
+        padding: 16px;
+        background: rgba(255, 255, 255, 0.06);
+      }
+
+      .sidebar-card strong {
+        display: block;
+        margin-bottom: 8px;
+      }
+
+      .sidebar-card p {
+        margin: 0;
+        color: #b8c4cf;
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
+      .content {
+        padding: 26px;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        margin-bottom: 24px;
+      }
+
+      .title h2 {
+        margin: 0 0 6px;
+        font-size: 28px;
+        letter-spacing: 0;
+      }
+
+      .title span {
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .search {
+        width: 270px;
+        height: 44px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 0 14px;
+        background: var(--panel);
+        color: var(--muted);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 600;
+      }
+
+      .metrics {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+        margin-bottom: 20px;
+      }
+
+      .metric {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 15px;
+      }
+
+      .metric small {
+        color: var(--muted);
+        font-weight: 700;
+      }
+
+      .metric strong {
+        display: block;
+        margin-top: 8px;
+        font-size: 24px;
+      }
+
+      .filters {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 14px;
+      }
+
+      .segmented {
+        display: inline-grid;
+        grid-template-columns: repeat(3, 1fr);
+        padding: 3px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #eef3f8;
+      }
+
+      .segmented button {
+        min-width: 82px;
+        min-height: 34px;
+        border-radius: 6px;
+        background: transparent;
+        color: var(--muted);
+        font-weight: 700;
+      }
+
+      .segmented .selected {
+        background: var(--panel);
+        color: var(--ink);
+        box-shadow: 0 1px 4px rgba(23, 33, 43, 0.12);
+      }
+
+      .word-list {
+        display: grid;
+        gap: 10px;
+      }
+
+      .word-row {
+        display: grid;
+        grid-template-columns: 132px 1fr 98px;
+        gap: 14px;
+        align-items: center;
+        min-height: 76px;
+        padding: 14px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+      }
+
+      .word-row .word {
+        font-size: 18px;
+        font-weight: 800;
+      }
+
+      .word-row p {
+        margin: 4px 0 0;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.45;
+      }
+
+      .level {
+        justify-self: end;
+        border-radius: 999px;
+        padding: 7px 10px;
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .new {
+        background: var(--blue-weak);
+        color: var(--blue);
+      }
+
+      .review {
+        background: var(--gold-weak);
+        color: var(--gold);
+      }
+
+      .mastered {
+        background: var(--teal-weak);
+        color: var(--teal);
+      }
+
+      .detail {
+        border-left: 1px solid var(--line);
+        background: var(--panel);
+        padding: 26px 22px;
+      }
+
+      .detail-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 26px;
+      }
+
+      .icon-button {
+        width: 38px;
+        height: 38px;
+        border-radius: 8px;
+        background: var(--soft);
+        color: var(--ink);
+      }
+
+      .word-card h2 {
+        margin: 0;
+        font-size: 36px;
+        letter-spacing: 0;
+      }
+
+      .pronunciation {
+        margin: 8px 0 20px;
+        color: var(--teal);
+        font-weight: 800;
+      }
+
+      .meaning {
+        margin: 0 0 18px;
+        color: #344054;
+        font-size: 15px;
+        line-height: 1.6;
+      }
+
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 10px 0 22px;
+      }
+
+      .chip {
+        border-radius: 999px;
+        padding: 8px 11px;
+        background: var(--soft);
+        color: #344054;
+        font-size: 13px;
+        font-weight: 750;
+      }
+
+      .antonym .chip {
+        background: var(--coral-weak);
+        color: var(--coral);
+      }
+
+      .section-title {
+        margin: 0 0 10px;
+        font-size: 13px;
+        color: var(--muted);
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .example {
+        padding: 14px;
+        border-radius: 8px;
+        background: #f7fbfb;
+        border: 1px solid var(--teal-weak);
+        color: #344054;
+        font-size: 14px;
+        line-height: 1.55;
+      }
+
+      .actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 22px;
+      }
+
+      .primary,
+      .ghost {
+        min-height: 42px;
+        border-radius: 8px;
+        font-weight: 800;
+      }
+
+      .primary {
+        background: var(--teal);
+        color: #fff;
+      }
+
+      .ghost {
+        border: 1px solid var(--line);
+        background: #fff;
+        color: var(--ink);
+      }
+
+      .tablet {
+        width: 834px;
+        min-height: 1040px;
+        padding: 24px;
+      }
+
+      .tablet-shell {
+        display: grid;
+        grid-template-rows: auto auto 1fr;
+        gap: 18px;
+      }
+
+      .tablet-nav,
+      .mobile-nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .tablet-grid {
+        display: grid;
+        grid-template-columns: 1.08fr 0.92fr;
+        gap: 18px;
+      }
+
+      .panel {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        padding: 18px;
+      }
+
+      .deck-card {
+        min-height: 250px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        background: #10212c;
+        color: #fff;
+        border: 0;
+      }
+
+      .deck-card p {
+        color: #c9d5df;
+        line-height: 1.55;
+      }
+
+      .study-list {
+        display: grid;
+        gap: 10px;
+      }
+
+      .compact-row {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 12px;
+        align-items: center;
+        padding: 14px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+      }
+
+      .compact-row strong {
+        display: block;
+        margin-bottom: 4px;
+      }
+
+      .compact-row span {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .mobile {
+        width: 390px;
+        min-height: 844px;
+        background: #f8fafc;
+      }
+
+      .mobile-shell {
+        padding: 18px;
+      }
+
+      .mobile-title {
+        margin: 24px 0 16px;
+      }
+
+      .mobile-title h2 {
+        margin: 0 0 6px;
+        font-size: 26px;
+      }
+
+      .mobile-card {
+        min-height: 430px;
+        padding: 22px;
+        border-radius: 8px;
+        background: #fff;
+        border: 1px solid var(--line);
+        display: flex;
+        flex-direction: column;
+      }
+
+      .mobile-card h3 {
+        margin: 4px 0 8px;
+        font-size: 34px;
+      }
+
+      .mobile-tabs {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin: 16px 0;
+      }
+
+      .tab {
+        min-height: 36px;
+        border-radius: 8px;
+        background: var(--soft);
+        color: #344054;
+        font-weight: 800;
+      }
+
+      .tab.active {
+        background: var(--teal);
+        color: #fff;
+      }
+
+      .bottom-nav {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+        margin-top: 18px;
+        padding: 10px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+      }
+
+      .bottom-nav button {
+        min-height: 44px;
+        border: 0;
+        background: transparent;
+        color: var(--muted);
+        font-weight: 800;
+      }
+
+      @media (max-width: 1260px) {
+        .page {
+          padding: 22px;
+        }
+
+        .desktop {
+          transform: scale(0.78);
+          transform-origin: top center;
+          margin-bottom: -150px;
+        }
+      }
+
+      @media (max-width: 880px) {
+        .desktop,
+        .tablet {
+          transform: scale(0.45);
+          transform-origin: top center;
+          margin-bottom: -520px;
+        }
+
+        .board-label {
+          max-width: 390px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <section class="intro">
+        <h1>GRE Word List Responsive UI</h1>
+        <p>
+          Three implementation-ready artboards for a GRE vocabulary product: a desktop dashboard, a tablet study layout,
+          and a mobile flashcard flow with meanings, synonyms, antonyms, and review status.
+        </p>
+      </section>
+
+      <div class="boards">
+        <div class="board-label"><span>Desktop</span><span>1180 x 760</span></div>
+        <section class="artboard desktop" aria-label="Desktop GRE vocabulary dashboard">
+          <aside class="sidebar">
+            <div class="brand"><span class="brand-mark">V</span><span>VerbaGRE</span></div>
+            <nav class="nav" aria-label="Primary">
+              <button class="active">Word List</button>
+              <button>Study Decks</button>
+              <button>Quiz Mode</button>
+              <button>Progress</button>
+              <button>Saved Words</button>
+            </nav>
+            <div class="sidebar-card">
+              <strong>Today’s target</strong>
+              <p>Learn 20 new words and review 36 due cards before your streak resets.</p>
+            </div>
+          </aside>
+
+          <section class="content">
+            <div class="topbar">
+              <div class="title">
+                <h2>High-Frequency GRE Words</h2>
+                <span>Curated by difficulty, frequency, and review status</span>
+              </div>
+              <div class="search">⌕ Search words</div>
+            </div>
+
+            <div class="metrics">
+              <div class="metric"><small>Mastered</small><strong>428</strong></div>
+              <div class="metric"><small>Due Today</small><strong>36</strong></div>
+              <div class="metric"><small>New</small><strong>120</strong></div>
+            </div>
+
+            <div class="filters">
+              <div class="segmented">
+                <button class="selected">All</button>
+                <button>New</button>
+                <button>Due</button>
+              </div>
+              <button class="ghost">Sort: Frequency</button>
+            </div>
+
+            <div class="word-list">
+              <article class="word-row">
+                <div><div class="word">Abate</div><p>Verb</p></div>
+                <p>To become less intense, widespread, or severe.</p>
+                <span class="level review">Review</span>
+              </article>
+              <article class="word-row">
+                <div><div class="word">Esoteric</div><p>Adjective</p></div>
+                <p>Understood by only a small group with specialized knowledge.</p>
+                <span class="level new">New</span>
+              </article>
+              <article class="word-row">
+                <div><div class="word">Laconic</div><p>Adjective</p></div>
+                <p>Using very few words; concise to the point of seeming terse.</p>
+                <span class="level mastered">Mastered</span>
+              </article>
+              <article class="word-row">
+                <div><div class="word">Obdurate</div><p>Adjective</p></div>
+                <p>Stubbornly refusing to change one's opinion or course of action.</p>
+                <span class="level review">Review</span>
+              </article>
+              <article class="word-row">
+                <div><div class="word">Pernicious</div><p>Adjective</p></div>
+                <p>Having a harmful effect, especially in a gradual or subtle way.</p>
+                <span class="level new">New</span>
+              </article>
+            </div>
+          </section>
+
+          <aside class="detail">
+            <div class="detail-header">
+              <strong>Word Detail</strong>
+              <button class="icon-button">★</button>
+            </div>
+            <article class="word-card">
+              <h2>Abate</h2>
+              <div class="pronunciation">uh-BAYT · verb</div>
+              <p class="meaning">
+                To reduce in intensity or amount; to become less severe after a period of force or activity.
+              </p>
+
+              <h3 class="section-title">Synonyms</h3>
+              <div class="chips">
+                <span class="chip">lessen</span>
+                <span class="chip">subside</span>
+                <span class="chip">diminish</span>
+                <span class="chip">wane</span>
+              </div>
+
+              <h3 class="section-title">Antonyms</h3>
+              <div class="chips antonym">
+                <span class="chip">intensify</span>
+                <span class="chip">amplify</span>
+                <span class="chip">escalate</span>
+              </div>
+
+              <h3 class="section-title">Example</h3>
+              <p class="example">The storm began to abate after midnight, leaving the streets quiet and slick.</p>
+
+              <div class="actions">
+                <button class="ghost">Need Review</button>
+                <button class="primary">Know It</button>
+              </div>
+            </article>
+          </aside>
+        </section>
+
+        <div class="board-label"><span>Tablet</span><span>834 x 1040</span></div>
+        <section class="artboard tablet" aria-label="Tablet GRE vocabulary study layout">
+          <div class="tablet-shell">
+            <header class="tablet-nav">
+              <div class="brand"><span class="brand-mark">V</span><span style="color: var(--ink)">VerbaGRE</span></div>
+              <button class="ghost">Quiz</button>
+            </header>
+            <div class="topbar">
+              <div class="title">
+                <h2>Study Session</h2>
+                <span>36 review cards · 20 new cards</span>
+              </div>
+              <div class="search">⌕ Search</div>
+            </div>
+            <div class="tablet-grid">
+              <section class="panel deck-card">
+                <div>
+                  <span class="level mastered">Current card</span>
+                  <h2>Esoteric</h2>
+                  <p>Known by a small, specialized group; not intended for broad public understanding.</p>
+                </div>
+                <div>
+                  <h3 class="section-title" style="color:#9fb2bf">Synonyms</h3>
+                  <div class="chips">
+                    <span class="chip">arcane</span>
+                    <span class="chip">obscure</span>
+                    <span class="chip">recondite</span>
+                  </div>
+                </div>
+              </section>
+              <section class="panel">
+                <h3 class="section-title">Antonyms</h3>
+                <div class="chips antonym">
+                  <span class="chip">common</span>
+                  <span class="chip">accessible</span>
+                  <span class="chip">mainstream</span>
+                </div>
+                <h3 class="section-title">Example</h3>
+                <p class="example">The professor’s esoteric references delighted specialists but confused most readers.</p>
+                <div class="actions">
+                  <button class="ghost">Hard</button>
+                  <button class="primary">Easy</button>
+                </div>
+              </section>
+              <section class="panel" style="grid-column: 1 / -1">
+                <div class="filters">
+                  <h3 style="margin:0">Due Words</h3>
+                  <div class="segmented"><button class="selected">Due</button><button>Saved</button><button>New</button></div>
+                </div>
+                <div class="study-list">
+                  <div class="compact-row"><div><strong>Obdurate</strong><span>stubborn, unyielding</span></div><span class="level review">Review</span></div>
+                  <div class="compact-row"><div><strong>Equivocal</strong><span>ambiguous, unclear</span></div><span class="level new">New</span></div>
+                  <div class="compact-row"><div><strong>Pragmatic</strong><span>practical, realistic</span></div><span class="level mastered">Mastered</span></div>
+                </div>
+              </section>
+            </div>
+          </div>
+        </section>
+
+        <div class="board-label"><span>Mobile</span><span>390 x 844</span></div>
+        <section class="artboard mobile" aria-label="Mobile GRE vocabulary flashcard layout">
+          <div class="mobile-shell">
+            <header class="mobile-nav">
+              <div class="brand"><span class="brand-mark">V</span><span style="color: var(--ink)">VerbaGRE</span></div>
+              <button class="icon-button">☰</button>
+            </header>
+            <section class="mobile-title">
+              <h2>Flashcards</h2>
+              <span style="color: var(--muted)">Card 8 of 36 due today</span>
+            </section>
+            <article class="mobile-card">
+              <span class="level review" style="align-self:flex-start">Review</span>
+              <h3>Pernicious</h3>
+              <div class="pronunciation">per-NISH-us · adjective</div>
+              <div class="mobile-tabs">
+                <button class="tab active">Meaning</button>
+                <button class="tab">Syn</button>
+                <button class="tab">Ant</button>
+              </div>
+              <p class="meaning">Causing serious harm in a gradual or subtle way.</p>
+              <h3 class="section-title">Synonyms</h3>
+              <div class="chips">
+                <span class="chip">harmful</span>
+                <span class="chip">damaging</span>
+                <span class="chip">deleterious</span>
+              </div>
+              <h3 class="section-title">Antonyms</h3>
+              <div class="chips antonym">
+                <span class="chip">beneficial</span>
+                <span class="chip">benign</span>
+              </div>
+              <div class="actions" style="margin-top:auto">
+                <button class="ghost">Again</button>
+                <button class="primary">Got It</button>
+              </div>
+            </article>
+            <nav class="bottom-nav" aria-label="Mobile bottom navigation">
+              <button>List</button>
+              <button>Deck</button>
+              <button>Quiz</button>
+              <button>Stats</button>
+            </nav>
+          </div>
+        </section>
+      </div>
+    </main>
+  </body>
+</html>
