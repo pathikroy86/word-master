@@ -94,6 +94,7 @@ Framework Preset: Next.js
 Install Command: npm install
 Build Command: npm run build
 Development Command: npm run dev
+Output Directory: web/.next
 Root Directory: .
 ```
 
