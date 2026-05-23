@@ -22,7 +22,7 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { authClient } from "../lib/auth-client";
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api";
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 const pageSize = 20;
 
 const navItems = [
@@ -270,7 +270,7 @@ function Dashboard({ words, stats, setActiveView, onSelect, user }) {
       <div className="dashboardLayout">
         <div className="dashboardMain">
           <div className="topSearchRow">
-            <SearchBox value="" onChange={() => {}} placeholder="Search GRE words..." />
+            <SearchBox value="" onChange={() => { }} placeholder="Search GRE words..." />
             <div className="avatar">AA</div>
           </div>
 
