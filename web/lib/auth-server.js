@@ -30,6 +30,11 @@ const vercelOrigin = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}
 const appOrigin = process.env.WEB_ORIGIN || vercelOrigin || "http://localhost:3000";
 const authBaseURL = process.env.BETTER_AUTH_URL || `${appOrigin}/api/auth`;
 
+// Prepare trusted origins - include all possible origins
+const trustedOrigins = [appOrigin];
+if (vercelOrigin && vercelOrigin !== appOrigin) trustedOrigins.push(vercelOrigin);
+if (appOrigin !== "http://localhost:3000") trustedOrigins.push("http://localhost:3000");
+
 export const auth = betterAuth({
     appName: "WordMaster",
     database: mongodbAdapter(authDb, {
@@ -37,7 +42,7 @@ export const auth = betterAuth({
     }),
     secret: process.env.BETTER_AUTH_SECRET,
     baseURL: authBaseURL,
-    trustedOrigins: [appOrigin],
+    trustedOrigins: trustedOrigins,
     emailAndPassword: {
         enabled: true,
         minPasswordLength: 8,
