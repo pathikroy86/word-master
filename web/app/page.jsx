@@ -24,6 +24,13 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { authClient } from "../lib/auth-client";
 import { filterAndSortWords } from "../lib/word-search";
+import {
+  addQuizEntry,
+  getProgressSnapshot,
+  getStreakViewModel,
+  loadQuizLog,
+  recordStudyActivity
+} from "../lib/progress-store";
 import ThemeToggle from "./components/ThemeToggle";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
@@ -384,11 +391,17 @@ function Sidebar({ activeView, setActiveView, closeMenu, isGuest = false, user, 
   );
 }
 
-function SearchBox({ value, onChange, placeholder = "Search GRE words..." }) {
+function SearchBox({ value, onChange, placeholder = "Search words..." }) {
   return (
     <label className="searchBox">
-      <Search size={17} />
-      <input value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} />
+      <Search size={16} strokeWidth={2.25} />
+      <input
+        type="search"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder={placeholder}
+        aria-label={placeholder}
+      />
     </label>
   );
 }
@@ -491,24 +504,192 @@ function WordDetail({ word, onReview, savedIds, onToggleSave, guestMode = false,
   );
 }
 
-function StatsGrid({ stats }) {
+function StatsGrid({ stats, activePanel, onSelectPanel }) {
   const cells = [
-    { value: stats.mastered || 0, label: "Mastered", className: "" },
-    { value: `${stats.accuracy || 0}%`, label: "Accuracy", className: "green" },
-    { value: stats.learning || 0, label: "Learning", className: "red" },
-    { value: stats.streak || 0, label: "Day streak", className: "orange" }
+    { id: "mastered", value: stats.mastered || 0, label: "Mastered", className: "" },
+    { id: "accuracy", value: `${stats.accuracy || 0}%`, label: "Accuracy", className: "green" },
+    { id: "learning", value: stats.learning || 0, label: "Learning", className: "red" },
+    { id: "streak", value: stats.streak || 0, label: "Day streak", className: "orange" }
   ];
 
   return (
-    <div className="statsGrid">
+    <div className="statsGrid statsGridInteractive">
       {cells.map((cell, index) => (
-        <div className="statCell" key={cell.label} style={{ animationDelay: `${index * 0.07}s` }}>
+        <button
+          type="button"
+          className={activePanel === cell.id ? "statCell statCellButton active" : "statCell statCellButton"}
+          key={cell.id}
+          style={{ animationDelay: `${index * 0.07}s` }}
+          onClick={() => onSelectPanel(activePanel === cell.id ? null : cell.id)}
+        >
           <strong className={cell.className}>{cell.value}</strong>
           <span>{cell.label}</span>
-        </div>
+        </button>
       ))}
     </div>
   );
+}
+
+function StreakPanel({ streakInfo, onClose }) {
+  const maxCount = Math.max(...streakInfo.week.map((day) => day.count), 1);
+
+  return (
+    <div className="dashboardStatPanel streakPanel animate-view-in">
+      <div className="statPanelHeader">
+        <h3>Your streak</h3>
+        <button type="button" className="statPanelClose" onClick={onClose}>Close</button>
+      </div>
+      <div className="streakPanelHero">
+        <div className="streakFlameWrap">
+          <Flame size={28} className="streakFlameIcon" />
+        </div>
+        <div>
+          <h3>{streakInfo.streak}-day streak</h3>
+          <p>{streakInfo.todayCount} reviews today · {streakInfo.weekTotal} this week</p>
+        </div>
+      </div>
+      <div className="streakWeekGrid">
+        {streakInfo.week.map((day, index) => (
+          <div
+            className={[
+              "streakDay",
+              day.isToday ? "today" : "",
+              day.active ? "active" : "inactive"
+            ].filter(Boolean).join(" ")}
+            key={day.key}
+            style={{ animationDelay: `${index * 0.08}s` }}
+            title={`${day.fullLabel}: ${day.count} reviews`}
+          >
+            <span className="streakDayBar" style={{ height: `${Math.max((day.count / maxCount) * 100, day.active ? 18 : 8)}%` }} />
+            <strong>{day.label}</strong>
+            <em>{day.count || "—"}</em>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function StatWordsPanel({ title, status, onSelectWord, setActiveView, onClose }) {
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function load() {
+      setLoading(true);
+      try {
+        const params = new URLSearchParams({ status, limit: "200", sort: "alpha-asc" });
+        const data = await fetchJson(`/words?${params.toString()}`);
+        setItems(data.items?.length ? data.items : fallbackWords.filter((w) => normalizeStatus(w.status) === status));
+      } catch {
+        setItems(fallbackWords.filter((w) => normalizeStatus(w.status) === status));
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, [status]);
+
+  return (
+    <div className="dashboardStatPanel animate-view-in">
+      <div className="statPanelHeader">
+        <h3>{title}</h3>
+        <button type="button" className="statPanelClose" onClick={onClose}>Close</button>
+      </div>
+      {loading && <div className="inlineLoading">Loading {title.toLowerCase()}...</div>}
+      {!loading && !items.length && <div className="emptyState">No words in this group yet.</div>}
+      {!loading && (
+        <div className="wordListPanel statPanelList">
+          {items.map((word, index) => (
+            <WordRow
+              key={word.id}
+              word={word}
+              index={index}
+              onSelect={(item) => {
+                onSelectWord(item);
+                setActiveView("words");
+              }}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AccuracyPanel({ quizLog, onClose }) {
+  const correct = quizLog.filter((entry) => entry.correct);
+  const wrong = quizLog.filter((entry) => !entry.correct);
+
+  return (
+    <div className="dashboardStatPanel animate-view-in">
+      <div className="statPanelHeader">
+        <h3>Quiz accuracy</h3>
+        <button type="button" className="statPanelClose" onClick={onClose}>Close</button>
+      </div>
+      <div className="accuracySummary">
+        <div className="accuracyPill correct"><Check size={16} /> {correct.length} correct</div>
+        <div className="accuracyPill wrong"><X size={16} /> {wrong.length} wrong</div>
+      </div>
+      {!quizLog.length && <div className="emptyState">Take a quiz to see your right and wrong answers here.</div>}
+      {correct.length > 0 && (
+        <>
+          <div className="fieldLabel">Correct answers</div>
+          <div className="quizResultList">
+            {correct.map((entry) => (
+              <div className="quizResultRow correct" key={entry.id}>
+                <strong>{entry.word}</strong>
+                <span>{entry.answer}</span>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+      {wrong.length > 0 && (
+        <>
+          <div className="fieldLabel">Wrong answers</div>
+          <div className="quizResultList">
+            {wrong.map((entry) => (
+              <div className="quizResultRow wrong" key={entry.id}>
+                <strong>{entry.word}</strong>
+                <span>You chose: {entry.picked}</span>
+                <span>Correct: {entry.answer}</span>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function DashboardStatDetail({ panel, stats, quizLog, streakInfo, onSelectWord, setActiveView, onClose }) {
+  if (!panel) return null;
+  if (panel === "streak") return <StreakPanel streakInfo={streakInfo} onClose={onClose} />;
+  if (panel === "mastered") {
+    return (
+      <StatWordsPanel
+        title="Mastered words"
+        status="mastered"
+        onSelectWord={onSelectWord}
+        setActiveView={setActiveView}
+        onClose={onClose}
+      />
+    );
+  }
+  if (panel === "learning") {
+    return (
+      <StatWordsPanel
+        title="Learning words"
+        status="learning"
+        onSelectWord={onSelectWord}
+        setActiveView={setActiveView}
+        onClose={onClose}
+      />
+    );
+  }
+  if (panel === "accuracy") return <AccuracyPanel quizLog={quizLog} onClose={onClose} />;
+  return null;
 }
 
 function FlipFlashcard({ word, flipped, onFlip, onReview, onNext }) {
@@ -572,16 +753,17 @@ function FlipFlashcard({ word, flipped, onFlip, onReview, onNext }) {
   );
 }
 
-function Dashboard({ words, stats, setActiveView, onSelect, user, dashboardSearch, onSearch, onBrowseAll }) {
+function Dashboard({ words, stats, quizLog, streakInfo, setActiveView, onSelect, user, dashboardSearch, onSearch, onBrowseAll }) {
   const today = words.slice(0, 3);
   const displayName = user?.name || user?.email || "there";
+  const [activePanel, setActivePanel] = useState(null);
 
   return (
     <WindowFrame title="WordMaster - Dashboard" className="dashboardWindow">
       <div className="dashboardLayout">
         <div className="dashboardMain">
           <div className="topSearchRow">
-            <SearchBox value={dashboardSearch} onChange={onSearch} placeholder="Search GRE words..." />
+            <SearchBox value={dashboardSearch} onChange={onSearch} placeholder="Search words..." />
             <div className="avatar">
               {user?.image ? (
                 <img src={user.image} alt="" />
@@ -594,16 +776,17 @@ function Dashboard({ words, stats, setActiveView, onSelect, user, dashboardSearc
           <h1>Welcome, {displayName}</h1>
           <p className="lead">{stats.new || 0} new words are waiting. Master words as you review them.</p>
 
-          <div className="streakCard">
-            <span><Flame size={14} /> 7-day streak</span>
-            <div className="weekdayRow">
-              {["M", "T", "W", "T", "F", "S", "S"].map((day, index) => (
-                <strong className={index === 5 ? "today" : index === 6 ? "inactive" : ""} key={`${day}-${index}`}>{day}</strong>
-              ))}
-            </div>
-          </div>
+          <StatsGrid stats={stats} activePanel={activePanel} onSelectPanel={setActivePanel} />
 
-          <StatsGrid stats={stats} />
+          <DashboardStatDetail
+            panel={activePanel}
+            stats={stats}
+            quizLog={quizLog}
+            streakInfo={streakInfo}
+            onSelectWord={onSelect}
+            setActiveView={setActiveView}
+            onClose={() => setActivePanel(null)}
+          />
 
           <div className="sectionHeader">
             <h3>Today&apos;s words</h3>
@@ -700,7 +883,7 @@ function WordsView({
               setSearch(value);
               setPage(1);
             }}
-            placeholder="Search words..."
+            placeholder="Search words in your list..."
           />
           <label className="sortSelect">
             <SlidersHorizontal size={16} />
@@ -841,7 +1024,7 @@ function Flashcards({ words, selectedWord, setSelectedWord, onReview }) {
   );
 }
 
-function QuizPage({ words, onReview, onToast }) {
+function QuizPage({ words, onReview, onToast, onQuizAnswer }) {
   const deck = words.length >= 4 ? words : fallbackWords;
   const [index, setIndex] = useState(0);
   const [picked, setPicked] = useState(null);
@@ -865,6 +1048,13 @@ function QuizPage({ words, onReview, onToast }) {
       total: current.total + 1
     }));
     onToast(correct ? `Correct — ${word.word}` : `Not quite — ${word.word}`, correct ? "success" : "error");
+    onQuizAnswer?.({
+      wordId: word.id,
+      word: word.word,
+      correct,
+      picked: option,
+      answer: word.meaning
+    });
     if (correct) onReview(word, "mastered", { silent: true });
     else onReview(word, "learning", { silent: true });
   }
@@ -886,8 +1076,14 @@ function QuizPage({ words, onReview, onToast }) {
         <span>What does this mean?</span>
         <h2>{word.word}</h2>
         <em>{word.partOfSpeech}</em>
-        <button type="button" className="iconCluster" style={{ margin: "12px auto 0", width: 44, height: 44 }} onClick={() => speakUkWord(word.word)}>
-          <Volume2 size={17} />
+        <button
+          type="button"
+          className="quizSpeak"
+          onClick={() => speakUkWord(word.word)}
+          aria-label={`Pronounce ${word.word}`}
+          title="Listen in UK English"
+        >
+          <Volume2 size={18} />
         </button>
       </div>
       <div className="answers">
@@ -1499,6 +1695,20 @@ export default function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [savedIds, setSavedIds] = useState(() => loadSavedIds());
   const [toasts, setToasts] = useState([]);
+  const [quizLog, setQuizLog] = useState([]);
+  const [streakInfo, setStreakInfo] = useState({ streak: 0, week: [], weekTotal: 0, todayCount: 0 });
+
+  const refreshProgress = useCallback(() => {
+    const log = loadQuizLog();
+    const streak = getStreakViewModel();
+    setQuizLog(log);
+    setStreakInfo(streak);
+    setStats((current) => getProgressSnapshot(current, log));
+  }, []);
+
+  useEffect(() => {
+    refreshProgress();
+  }, [refreshProgress]);
 
   const pushToast = useCallback((message, type = "success") => {
     const id = `${Date.now()}-${Math.random()}`;
@@ -1527,10 +1737,21 @@ export default function App() {
     async function loadStats() {
       try {
         const statsData = await fetchJson("/stats");
-        setStats(statsData);
+        setStats(getProgressSnapshot(statsData));
+        setStreakInfo(getStreakViewModel());
+        setQuizLog(loadQuizLog());
       } catch {
         setError("Using sample stats because the API is not reachable yet.");
-        setStats({ total: fallbackWords.length, mastered: 1, learning: 1, new: 1, learned: 1, accuracy: 50, dueToday: 1, streak: 0 });
+        setStats(getProgressSnapshot({
+          total: fallbackWords.length,
+          mastered: 1,
+          learning: 1,
+          new: 1,
+          learned: 1,
+          dueToday: 1
+        }));
+        setStreakInfo(getStreakViewModel());
+        setQuizLog(loadQuizLog());
       }
     }
 
@@ -1592,6 +1813,9 @@ export default function App() {
         dueToday: updated.learning || 0
       };
     });
+
+    recordStudyActivity();
+    refreshProgress();
 
     if (!options.silent) {
       pushToast(`${word.word}: ${label}`, "success");
@@ -1668,6 +1892,8 @@ export default function App() {
       <Dashboard
         words={words}
         stats={stats}
+        quizLog={quizLog}
+        streakInfo={streakInfo}
         setActiveView={changeView}
         onSelect={setSelectedWord}
         user={session?.user}
@@ -1684,7 +1910,18 @@ export default function App() {
         onReview={handleReview}
       />
     ),
-    quiz: <QuizPage words={words} onReview={handleReview} onToast={pushToast} />,
+    quiz: (
+      <QuizPage
+        words={words}
+        onReview={handleReview}
+        onToast={pushToast}
+        onQuizAnswer={(entry) => {
+          addQuizEntry(entry);
+          recordStudyActivity();
+          refreshProgress();
+        }}
+      />
+    ),
     words: (
       <WordsView
         words={words}
