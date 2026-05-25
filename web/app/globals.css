@@ -39,6 +39,11 @@
   --search-bg: rgba(255, 255, 255, 0.08);
   --search-bg-focus: rgba(255, 255, 255, 0.12);
   --search-ring: rgba(168, 162, 244, 0.35);
+  --btn-gradient: linear-gradient(135deg, #8b82eb 0%, #6358c9 45%, #4a42a8 100%);
+  --btn-gradient-hover: linear-gradient(135deg, #9d95f0 0%, #7469d4 45%, #534ab7 100%);
+  --btn-gradient-soft: linear-gradient(135deg, rgba(139, 130, 235, 0.22), rgba(83, 74, 183, 0.12));
+  --btn-coral-gradient: linear-gradient(135deg, #ff8f7d 0%, #e85a42 50%, #d94832 100%);
+  --btn-teal-gradient: linear-gradient(135deg, #3dd4ad 0%, #22c39a 50%, #0d9a78 100%);
 }
 
 [data-theme="light"] {
@@ -81,6 +86,11 @@
   --search-bg: #f0f2f5;
   --search-bg-focus: #e4e6eb;
   --search-ring: rgba(83, 74, 183, 0.28);
+  --btn-gradient: linear-gradient(135deg, #7c72e8 0%, #534ab7 50%, #463da3 100%);
+  --btn-gradient-hover: linear-gradient(135deg, #8f86ed 0%, #6358c9 50%, #534ab7 100%);
+  --btn-gradient-soft: linear-gradient(135deg, rgba(124, 114, 232, 0.16), rgba(83, 74, 183, 0.08));
+  --btn-coral-gradient: linear-gradient(135deg, #ff9a88 0%, #e85a42 50%, #d94832 100%);
+  --btn-teal-gradient: linear-gradient(135deg, #4ae0b8 0%, #22c39a 50%, #0d9a78 100%);
 }
 
 * {
@@ -119,6 +129,95 @@ input {
 
 button {
   cursor: pointer;
+}
+
+.btnGradient,
+.authCta.primary,
+.authForm button[type="submit"],
+.authSubmit,
+.settingsActions button,
+.flashcardControls button,
+.reviewActions button,
+.actionRow button,
+.sectionHeader button,
+.paginationBar button:not(:disabled),
+.reviewActions.guestLocked button,
+.quizWindow .feedback button.primary {
+  background: var(--btn-gradient);
+  border: none;
+  color: var(--on-primary);
+  font-weight: 700;
+  transition: background 0.2s ease, transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.btnGradient:hover:not(:disabled),
+.authCta.primary:hover,
+.authForm button[type="submit"]:hover:not(:disabled),
+.authSubmit:hover:not(:disabled),
+.settingsActions button:hover:not(:disabled),
+.flashcardControls button:hover,
+.reviewActions button:hover,
+.actionRow button:hover,
+.sectionHeader button:hover,
+.paginationBar button:not(:disabled):hover,
+.reviewActions.guestLocked button:hover {
+  background: var(--btn-gradient-hover);
+  box-shadow: 0 8px 22px rgba(83, 74, 183, 0.35);
+}
+
+.reviewActions button:first-child {
+  background: var(--btn-coral-gradient);
+}
+
+.reviewActions button:first-child:hover {
+  background: linear-gradient(135deg, #ffa294 0%, #ff755f 50%, #e85a42 100%);
+  box-shadow: 0 8px 22px rgba(217, 72, 50, 0.3);
+}
+
+.flashcardControls button:not(.primary) {
+  background: var(--btn-coral-gradient);
+}
+
+.flashcardControls button:not(.primary):hover {
+  background: linear-gradient(135deg, #ffa294 0%, #ff755f 50%, #e85a42 100%);
+  box-shadow: 0 8px 22px rgba(217, 72, 50, 0.3);
+}
+
+.answers .correct {
+  background: var(--btn-teal-gradient) !important;
+  border: none !important;
+  color: var(--on-primary) !important;
+}
+
+.answers .wrong {
+  background: var(--btn-coral-gradient) !important;
+  border: none !important;
+  color: var(--on-primary) !important;
+}
+
+.authCta:not(.primary) {
+  background: var(--btn-gradient-soft);
+  border: 1px solid var(--border);
+  color: var(--primary-weak);
+}
+
+.authCta:not(.primary):hover {
+  background: var(--btn-gradient-hover);
+  color: var(--on-primary);
+  border-color: transparent;
+}
+
+.authSwitch,
+.statPanelClose {
+  background: var(--btn-gradient-soft);
+  border: 1px solid var(--border);
+  color: var(--primary-weak);
+}
+
+.authSwitch:hover,
+.statPanelClose:hover {
+  background: var(--btn-gradient-hover);
+  color: var(--on-primary);
 }
 
 .appShell {
@@ -367,18 +466,13 @@ button {
 
 .authCta {
   min-height: 34px;
-  border: 1px solid var(--border);
   border-radius: 8px;
-  background: transparent;
-  color: var(--primary-weak);
   padding: 0 14px;
   font-weight: 900;
 }
 
 .authCta.primary {
   border-color: transparent;
-  background: var(--primary);
-  color: var(--on-primary);
 }
 
 .guestHomeGrid {
@@ -1054,12 +1148,8 @@ h1 {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  border: 1px solid var(--border);
   border-radius: 8px;
-  background: transparent;
-  color: var(--primary-weak);
   padding: 9px 14px;
-  font-weight: 800;
 }
 
 .todayList,
@@ -1291,10 +1381,7 @@ h1 {
   align-items: center;
   justify-content: center;
   gap: 5px;
-  border: 1px solid var(--border);
   border-radius: 8px;
-  background: transparent;
-  color: var(--text);
   font-weight: 900;
 }
 
@@ -1367,10 +1454,7 @@ h1 {
 
 .paginationBar button {
   min-height: 36px;
-  border: 1px solid var(--border);
   border-radius: 8px;
-  background: transparent;
-  color: var(--primary-weak);
   padding: 0 12px;
   font-weight: 900;
 }
@@ -1489,11 +1573,18 @@ h1 {
   min-height: 40px;
   border: 1px solid var(--border);
   border-radius: 8px;
-  background: transparent;
+  background: var(--btn-gradient-soft);
   color: var(--text);
   padding: 0 14px;
   text-align: left;
   font-weight: 800;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.answers button:hover:not(:disabled):not(.correct):not(.wrong) {
+  background: var(--btn-gradient);
+  border-color: transparent;
+  color: var(--on-primary);
 }
 
 .answers .correct {
@@ -1688,10 +1779,7 @@ h1 {
 
 .settingsActions button {
   min-height: 42px;
-  border: 0;
   border-radius: 8px;
-  background: var(--primary);
-  color: var(--on-primary);
   padding: 0 18px;
   font-weight: 900;
 }
@@ -1857,23 +1945,8 @@ h1 {
 
 .authSubmit {
   min-height: 46px;
-  border: 0;
   border-radius: 10px;
-  background: linear-gradient(135deg, #6358c9, var(--primary));
-  color: var(--on-primary);
-  font-weight: 700;
   font-size: 15px;
-  transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease;
-}
-
-.authSubmit:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 28px rgba(83, 74, 183, 0.45);
-  filter: brightness(1.06);
-}
-
-.authSubmit:active:not(:disabled) {
-  transform: translateY(0);
 }
 
 .authSubmit:disabled {
@@ -2158,17 +2231,8 @@ h1 {
 .flashcardControls button {
   flex: 1;
   min-height: 44px;
-  border: 1px solid var(--border);
   border-radius: 8px;
-  background: transparent;
-  color: var(--text);
   font-weight: 800;
-}
-
-.flashcardControls button.primary {
-  border-color: transparent;
-  background: var(--primary);
-  color: var(--on-primary);
 }
 
 .iconCluster button.saved,
@@ -2493,6 +2557,30 @@ h1 {
   .profilePhotoBlock {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .authCta,
+  .authSubmit,
+  .authForm button[type="submit"],
+  .sectionHeader button,
+  .actionRow button,
+  .settingsActions button,
+  .settingsPanel button,
+  .reviewActions button,
+  .flashcardControls button,
+  .paginationBar button,
+  .answers button,
+  .quizWindow .feedback button {
+    font-size: 12px;
+  }
+
+  .filterChips button {
+    font-size: 11px;
+    padding: 4px 9px;
+  }
+
+  .bottomNav button {
+    font-size: 9px;
   }
 }
 
