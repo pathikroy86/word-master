@@ -1375,14 +1375,23 @@ h1 {
   margin-top: 16px;
 }
 
-.reviewActions button {
+.reviewActions button,
+.flashcardControls button {
   min-height: 40px;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
+  gap: 6px;
+  line-height: 1;
+  white-space: nowrap;
   border-radius: 8px;
   font-weight: 900;
+}
+
+.reviewActions button svg,
+.flashcardControls button svg {
+  flex-shrink: 0;
+  display: block;
 }
 
 .listWindow {
@@ -2231,7 +2240,6 @@ h1 {
 .flashcardControls button {
   flex: 1;
   min-height: 44px;
-  border-radius: 8px;
   font-weight: 800;
 }
 
