@@ -1,4 +1,6 @@
-:root {
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
   --bg: #1d1d1c;
   --panel: #2b2c2a;
   --panel-2: #242522;
@@ -14,9 +16,65 @@
   --teal-weak: #d8f3ea;
   --amber: #d98a11;
   --amber-weak: #fff0d0;
-  --coral: #ff755f;
+  --coral: #ff755d;
   --coral-weak: #ffe7e2;
   --shadow: 0 22px 80px rgba(0, 0, 0, 0.26);
+  --border: #696a65;
+  --window-bar: #30312e;
+  --nav-active-bg: #e8e5ff;
+  --nav-active-text: #1d176b;
+  --on-primary: #ffffff;
+  --chip-all-bg: #f1efff;
+  --chip-all-text: #1f201e;
+  --streak-today-bg: #fff4d7;
+  --streak-today-text: #704000;
+  --streak-inactive-bg: #20211f;
+  --streak-inactive-text: #777872;
+  --notice-border: #7a622c;
+  --notice-bg: #302814;
+  --notice-text: #ffe1a3;
+  --overlay: rgba(0, 0, 0, 0.45);
+  --progress-track: #565752;
+  --quiz-track: #555650;
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  --bg: #eef1f6;
+  --panel: #ffffff;
+  --panel-2: #f7f8fb;
+  --panel-3: #f0f2f7;
+  --line: #d4dae4;
+  --line-soft: #e4e9f0;
+  --text: #171b22;
+  --muted: #5a6472;
+  --primary: #534ab7;
+  --primary-weak: #534ab7;
+  --purple-soft: #6f63d4;
+  --teal: #0d9a78;
+  --teal-weak: #d4f5eb;
+  --amber: #b86e08;
+  --amber-weak: #fff1cf;
+  --coral: #d94832;
+  --coral-weak: #fde5e0;
+  --shadow: 0 18px 48px rgba(23, 33, 43, 0.1);
+  --border: #c5ccd8;
+  --window-bar: #e8ecf2;
+  --nav-active-bg: #ebe8ff;
+  --nav-active-text: #31288f;
+  --on-primary: #ffffff;
+  --chip-all-bg: #ebe8ff;
+  --chip-all-text: #2a245c;
+  --streak-today-bg: #fff1cf;
+  --streak-today-text: #704000;
+  --streak-inactive-bg: #e4e9f0;
+  --streak-inactive-text: #7a8494;
+  --notice-border: #d4a84a;
+  --notice-bg: #fff8e8;
+  --notice-text: #6b4e12;
+  --overlay: rgba(15, 23, 42, 0.35);
+  --progress-track: #d4dae4;
+  --quiz-track: #d4dae4;
 }
 
 * {
@@ -33,6 +91,19 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-sans), Roboto, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+.appFrame,
+.sidebar,
+.windowFrame,
+.bottomNav,
+.mobileSidebar,
+.authPanel,
+.toast,
+.detailCard,
+.wordListPanel {
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
 }
 
 button,
@@ -84,7 +155,7 @@ button {
   place-items: center;
   border-radius: 6px;
   background: var(--primary);
-  color: #fff;
+  color: var(--on-primary);
 }
 
 .navGroupLabel {
@@ -117,8 +188,8 @@ button {
 }
 
 .navItem.active {
-  background: var(--primary-weak);
-  color: #1d176b;
+  background: var(--nav-active-bg);
+  color: var(--nav-active-text);
 }
 
 .navItem {
@@ -162,8 +233,8 @@ button {
   margin-bottom: 8px;
   border-radius: 999px;
   padding: 4px 10px;
-  background: var(--primary-weak);
-  color: #1d176b;
+  background: var(--nav-active-bg);
+  color: var(--nav-active-text);
   font-size: 11px;
   font-weight: 900;
   letter-spacing: 0.06em;
@@ -182,8 +253,41 @@ button {
   justify-content: flex-end;
 }
 
+.mobileTopBar {
+  gap: 10px;
+}
+
+.sessionBarActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.mobileMenuButton,
+.mobileMenuButtonInline {
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--primary-weak);
+  padding: 0;
+  box-shadow: none;
+}
+
+.mobileMenuButtonInline {
+  display: none;
+  flex-shrink: 0;
+  position: static;
+  width: 34px;
+  height: 34px;
+  margin-bottom: 8px;
+}
+
 .guestModeLabel {
-  margin-right: auto;
   color: var(--amber);
   font-size: 12px;
   font-weight: 900;
@@ -193,7 +297,7 @@ button {
 
 .authCta {
   min-height: 34px;
-  border: 1px solid #696a65;
+  border: 1px solid var(--border);
   border-radius: 8px;
   background: transparent;
   color: var(--primary-weak);
@@ -204,7 +308,7 @@ button {
 .authCta.primary {
   border-color: transparent;
   background: var(--primary);
-  color: #fff;
+  color: var(--on-primary);
 }
 
 .guestHomeGrid {
@@ -303,12 +407,65 @@ button {
 
 .sessionBar button {
   min-height: 32px;
-  border: 1px solid #696a65;
+  border: 1px solid var(--border);
   border-radius: 8px;
   background: transparent;
   color: var(--primary-weak);
   padding: 0 12px;
   font-weight: 900;
+}
+
+.sessionBar button.mobileMenuButton,
+.sessionBar button.mobileMenuButtonInline {
+  min-height: unset;
+  border: none;
+  background: transparent;
+  padding: 0;
+  box-shadow: none;
+  outline: none;
+}
+
+.sessionBar button.mobileMenuButton:focus,
+.sessionBar button.mobileMenuButton:focus-visible,
+.sessionBar button.mobileMenuButtonInline:focus,
+.sessionBar button.mobileMenuButtonInline:focus-visible {
+  border: none;
+  outline: none;
+  box-shadow: none;
+}
+
+.sessionBar button.themeToggle,
+.sessionBar .themeToggle {
+  min-height: unset;
+  border: none;
+  background: transparent;
+  padding: 0;
+  box-shadow: none;
+}
+
+.themeToggle {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--primary-weak);
+  transition: color 0.2s ease, transform 0.2s ease, background-color 0.2s ease;
+}
+
+.themeToggle:hover {
+  background: rgba(83, 74, 183, 0.12);
+  transform: scale(1.05);
+}
+
+.themeToggle:focus,
+.themeToggle:focus-visible {
+  border: none;
+  outline: none;
+  box-shadow: none;
 }
 
 .sessionBar img {
@@ -333,7 +490,7 @@ button {
   gap: 7px;
   padding: 0 16px;
   border-bottom: 1px solid var(--line);
-  background: #30312e;
+  background: var(--window-bar);
   color: var(--muted);
   font-size: 12px;
   font-weight: 700;
@@ -343,7 +500,7 @@ button {
   width: 9px;
   height: 9px;
   border-radius: 999px;
-  background: #777872;
+  background: var(--streak-inactive-text);
 }
 
 .windowBar strong {
@@ -381,7 +538,7 @@ button {
   display: flex;
   align-items: center;
   gap: 10px;
-  border: 1px solid #696a65;
+  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 0 12px;
   color: var(--muted);
@@ -407,8 +564,8 @@ button {
   display: grid;
   place-items: center;
   border-radius: 999px;
-  background: var(--primary-weak);
-  color: #1d176b;
+  background: var(--nav-active-bg);
+  color: var(--nav-active-text);
   font-weight: 800;
 }
 
@@ -467,13 +624,13 @@ h1 {
 }
 
 .weekdayRow .today {
-  background: #fff4d7;
-  color: #704000;
+  background: var(--streak-today-bg);
+  color: var(--streak-today-text);
 }
 
 .weekdayRow .inactive {
-  background: #20211f;
-  color: #777872;
+  background: var(--streak-inactive-bg);
+  color: var(--streak-inactive-text);
 }
 
 .statsGrid {
@@ -534,7 +691,7 @@ h1 {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  border: 1px solid #696a65;
+  border: 1px solid var(--border);
   border-radius: 8px;
   background: transparent;
   color: var(--primary-weak);
@@ -569,7 +726,7 @@ h1 {
 }
 
 .wordRow.selected {
-  color: #fff;
+  color: var(--on-primary);
 }
 
 .wordIndex {
@@ -657,13 +814,12 @@ h1 {
 }
 
 .iconCluster button,
-.filterButton,
-.mobileMenuButton {
+.filterButton {
   width: 36px;
   height: 36px;
   display: grid;
   place-items: center;
-  border: 1px solid #696a65;
+  border: 1px solid var(--border);
   border-radius: 8px;
   background: transparent;
   color: var(--primary-weak);
@@ -674,7 +830,7 @@ h1 {
   display: flex;
   align-items: center;
   gap: 8px;
-  border: 1px solid #696a65;
+  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 0 10px;
   background: var(--panel-3);
@@ -772,7 +928,7 @@ h1 {
   align-items: center;
   justify-content: center;
   gap: 5px;
-  border: 1px solid #696a65;
+  border: 1px solid var(--border);
   border-radius: 8px;
   background: transparent;
   color: var(--text);
@@ -798,14 +954,14 @@ h1 {
   border: 0;
   border-radius: 999px;
   padding: 5px 10px;
-  color: #1f201e;
+  color: var(--chip-all-text);
   font-size: 12px;
   font-weight: 900;
 }
 
 .filterChips .all,
 .filterChips .new {
-  background: #f1efff;
+  background: var(--chip-all-bg);
 }
 
 .filterChips .learning {
@@ -848,7 +1004,7 @@ h1 {
 
 .paginationBar button {
   min-height: 36px;
-  border: 1px solid #696a65;
+  border: 1px solid var(--border);
   border-radius: 8px;
   background: transparent;
   color: var(--primary-weak);
@@ -899,7 +1055,7 @@ h1 {
   height: 5px;
   overflow: hidden;
   border-radius: 999px;
-  background: #555650;
+  background: var(--quiz-track);
 }
 
 .quizProgress i {
@@ -942,7 +1098,7 @@ h1 {
 
 .answers button {
   min-height: 40px;
-  border: 1px solid #696a65;
+  border: 1px solid var(--border);
   border-radius: 8px;
   background: transparent;
   color: var(--text);
@@ -1004,7 +1160,7 @@ h1 {
   height: 6px;
   overflow: hidden;
   border-radius: 999px;
-  background: #565752;
+  background: var(--progress-track);
 }
 
 .progressBlock b {
@@ -1083,7 +1239,7 @@ h1 {
   min-height: 38px;
   display: inline-flex;
   align-items: center;
-  border: 1px solid #696a65;
+  border: 1px solid var(--border);
   border-radius: 8px;
   color: var(--primary-weak);
   padding: 0 12px;
@@ -1114,7 +1270,7 @@ h1 {
 .accountFields input,
 .accountFields select {
   min-height: 42px;
-  border: 1px solid #696a65;
+  border: 1px solid var(--border);
   border-radius: 8px;
   outline: 0;
   background: var(--panel-3);
@@ -1146,7 +1302,7 @@ h1 {
   border: 0;
   border-radius: 8px;
   background: var(--primary);
-  color: #fff;
+  color: var(--on-primary);
   padding: 0 18px;
   font-weight: 900;
 }
@@ -1158,11 +1314,11 @@ h1 {
 
 .notice {
   margin-bottom: 12px;
-  border: 1px solid #7a622c;
+  border: 1px solid var(--notice-border);
   border-radius: 8px;
   padding: 10px 12px;
-  background: #302814;
-  color: #ffe1a3;
+  background: var(--notice-bg);
+  color: var(--notice-text);
   font-size: 13px;
   font-weight: 700;
 }
@@ -1294,7 +1450,7 @@ h1 {
 
 .authForm input {
   min-height: 44px;
-  border: 1px solid #696a65;
+  border: 1px solid var(--border);
   border-radius: 10px;
   outline: 0;
   background: var(--panel-3);
@@ -1315,7 +1471,7 @@ h1 {
   border: 0;
   border-radius: 10px;
   background: linear-gradient(135deg, #6358c9, var(--primary));
-  color: #fff;
+  color: var(--on-primary);
   font-weight: 700;
   font-size: 15px;
   transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease;
@@ -1337,11 +1493,11 @@ h1 {
 }
 
 .authMessage {
-  border: 1px solid #7a622c;
+  border: 1px solid var(--notice-border);
   border-radius: 8px;
   padding: 10px 12px;
-  background: #302814;
-  color: #ffe1a3;
+  background: var(--notice-bg);
+  color: var(--notice-text);
   font-size: 13px;
   font-weight: 600;
   letter-spacing: 0;
@@ -1351,7 +1507,7 @@ h1 {
 .authSwitch {
   width: 100%;
   margin-top: 16px;
-  border: 1px solid #696a65;
+  border: 1px solid var(--border);
   border-radius: 10px;
   background: transparent;
   color: var(--primary-weak);
@@ -1583,7 +1739,7 @@ h1 {
 .flashcardControls button {
   flex: 1;
   min-height: 44px;
-  border: 1px solid #696a65;
+  border: 1px solid var(--border);
   border-radius: 8px;
   background: transparent;
   color: var(--text);
@@ -1593,7 +1749,7 @@ h1 {
 .flashcardControls button.primary {
   border-color: transparent;
   background: var(--primary);
-  color: #fff;
+  color: var(--on-primary);
 }
 
 .iconCluster button.saved,
@@ -1615,7 +1771,7 @@ h1 {
 .mobilePanelTabs button {
   flex: 1;
   min-height: 40px;
-  border: 1px solid #696a65;
+  border: 1px solid var(--border);
   border-radius: 8px;
   background: transparent;
   color: var(--muted);
@@ -1623,9 +1779,9 @@ h1 {
 }
 
 .mobilePanelTabs button.active {
-  background: var(--primary-weak);
+  background: var(--nav-active-bg);
   border-color: transparent;
-  color: #1d176b;
+  color: var(--nav-active-text);
 }
 
 .wordsGrid .detailWindow.mobileHidden,
@@ -1674,8 +1830,8 @@ h1 {
 }
 
 .bottomNav button.active {
-  background: var(--primary-weak);
-  color: #1d176b;
+  background: var(--nav-active-bg);
+  color: var(--nav-active-text);
 }
 
 .bottomNav button span {
@@ -1725,13 +1881,8 @@ h1 {
     display: none;
   }
 
-  .mobileMenuButton {
-    position: fixed;
-    z-index: 40;
-    top: 16px;
-    right: 16px;
+  .mobileMenuButtonInline {
     display: grid;
-    background: var(--panel);
   }
 
   .mobileOverlay.show {
@@ -1739,7 +1890,7 @@ h1 {
     inset: 0;
     z-index: 50;
     display: block;
-    background: rgba(0, 0, 0, 0.45);
+    background: var(--overlay);
   }
 
   .mobileSidebar {
@@ -1804,17 +1955,40 @@ h1 {
     display: inline-flex;
   }
 
-  .mobileMenuButton {
-    top: calc(12px + env(safe-area-inset-top, 0px));
-    right: 12px;
-    width: 44px;
-    height: 44px;
+  .mobileMenuButtonInline {
+    width: 32px;
+    height: 32px;
+    margin-bottom: 10px;
+    align-self: flex-start;
+  }
+
+  .mobileTopBar {
+    align-items: flex-start;
+    flex-wrap: nowrap;
   }
 
   .sessionBar {
-    flex-wrap: wrap;
-    justify-content: center;
-    padding-right: 48px;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    padding-right: 0;
+    padding-top: calc(4px + env(safe-area-inset-top, 0px));
+  }
+
+  .guestSessionBar .guestModeLabel {
+    display: none;
+  }
+
+  .sessionBarActions {
+    flex: 1;
+    min-width: 0;
+    justify-content: flex-end;
+  }
+
+  .sessionBarActions span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 42vw;
   }
 
   .windowBar {
@@ -1836,8 +2010,7 @@ h1 {
     flex-shrink: 0;
   }
 
-  .iconCluster button,
-  .mobileMenuButton {
+  .iconCluster button {
     width: 44px;
     height: 44px;
   }

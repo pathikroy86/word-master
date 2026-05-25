@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { authClient } from "../lib/auth-client";
+import ThemeToggle from "./components/ThemeToggle";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 const pageSize = 20;
@@ -1387,7 +1388,6 @@ function PublicApp() {
 
   return (
     <main className="appShell">
-      <button className="mobileMenuButton" type="button" aria-label="Open menu" onClick={() => setMenuOpen(true)}><Menu size={20} /></button>
       <div className={menuOpen ? "mobileOverlay show" : "mobileOverlay"} onClick={() => setMenuOpen(false)} />
       <div className={menuOpen ? "mobileSidebar show" : "mobileSidebar"}>
         <Sidebar activeView={activeView} setActiveView={changeView} closeMenu={() => setMenuOpen(false)} isGuest />
@@ -1396,10 +1396,16 @@ function PublicApp() {
       <div className="appFrame">
         <Sidebar activeView={activeView} setActiveView={changeView} isGuest />
         <section className="workspace">
-          <div className="sessionBar guestSessionBar">
+          <div className="sessionBar guestSessionBar mobileTopBar">
+            <button className="mobileMenuButton mobileMenuButtonInline" type="button" aria-label="Open menu" onClick={() => setMenuOpen(true)}>
+              <Menu size={18} />
+            </button>
             <span className="guestModeLabel">Demo mode</span>
-            <button className="authCta" type="button" onClick={() => openAuth(activeView === "home" ? "dashboard" : activeView, "login")}>Log in</button>
-            <button className="authCta primary" type="button" onClick={() => openAuth(activeView === "home" ? "dashboard" : activeView, "register")}>Sign up</button>
+            <div className="sessionBarActions">
+              <button className="authCta" type="button" onClick={() => openAuth(activeView === "home" ? "dashboard" : activeView, "login")}>Log in</button>
+              <button className="authCta primary" type="button" onClick={() => openAuth(activeView === "home" ? "dashboard" : activeView, "register")}>Sign up</button>
+              <ThemeToggle />
+            </div>
           </div>
           <div key={activeView} className="viewTransition">
             {content}
@@ -1641,7 +1647,6 @@ export default function App() {
 
   return (
     <main className="appShell">
-      <button className="mobileMenuButton" type="button" aria-label="Open menu" onClick={() => setMenuOpen(true)}><Menu size={20} /></button>
       <div className={menuOpen ? "mobileOverlay show" : "mobileOverlay"} onClick={() => setMenuOpen(false)} />
       <div className={menuOpen ? "mobileSidebar show" : "mobileSidebar"}>
         <Sidebar activeView={activeView} setActiveView={changeView} closeMenu={() => setMenuOpen(false)} />
@@ -1652,10 +1657,16 @@ export default function App() {
       <div className="appFrame">
         <Sidebar activeView={activeView} setActiveView={changeView} />
         <section className="workspace">
-          <div className="sessionBar">
-            {session.user?.image && <img src={session.user.image} alt="" />}
-            <span>{session.user?.name || session.user?.email}</span>
-            <button type="button" onClick={() => authClient.signOut({ fetchOptions: { onSuccess: () => window.location.reload() } })}>Sign out</button>
+          <div className="sessionBar mobileTopBar">
+            <button className="mobileMenuButton mobileMenuButtonInline" type="button" aria-label="Open menu" onClick={() => setMenuOpen(true)}>
+              <Menu size={18} />
+            </button>
+            <div className="sessionBarActions">
+              {session.user?.image && <img src={session.user.image} alt="" />}
+              <span>{session.user?.name || session.user?.email}</span>
+              <button type="button" onClick={() => authClient.signOut({ fetchOptions: { onSuccess: () => window.location.reload() } })}>Sign out</button>
+              <ThemeToggle />
+            </div>
           </div>
           {error && <div className="notice animate-view-in">{error}</div>}
           {loading ? (
