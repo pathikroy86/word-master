@@ -11,6 +11,7 @@ import {
   Home,
   List,
   Loader2,
+  LogOut,
   Menu,
   PlusCircle,
   Search,
@@ -22,6 +23,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { authClient } from "../lib/auth-client";
+import { filterAndSortWords } from "../lib/word-search";
 import ThemeToggle from "./components/ThemeToggle";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
@@ -113,6 +115,31 @@ function shuffle(items) {
     [copy[index], copy[swap]] = [copy[swap], copy[index]];
   }
   return copy;
+}
+
+function paginateWords(words, page, limit = pageSize) {
+  const skip = (page - 1) * limit;
+  const items = words.slice(skip, skip + limit);
+  return {
+    items,
+    total: words.length,
+    pages: Math.max(Math.ceil(words.length / limit), 1)
+  };
+}
+
+function getUserInitials(name, email) {
+  const trimmed = name?.trim();
+  if (trimmed) {
+    const parts = trimmed.split(/\s+/).filter(Boolean);
+    if (parts.length === 1) {
+      return parts[0].charAt(0).toUpperCase();
+    }
+    return `${parts[0].charAt(0)}${parts[parts.length - 1].charAt(0)}`.toUpperCase();
+  }
+  if (email?.trim()) {
+    return email.trim().charAt(0).toUpperCase();
+  }
+  return "U";
 }
 
 const fallbackWords = [
@@ -266,7 +293,7 @@ function BottomNav({ activeView, setActiveView, isGuest = false }) {
   );
 }
 
-function Sidebar({ activeView, setActiveView, closeMenu, isGuest = false }) {
+function Sidebar({ activeView, setActiveView, closeMenu, isGuest = false, user, onSignOut }) {
   const learnItems = isGuest
     ? [
         { id: "home", label: "Home", icon: Home },
@@ -274,6 +301,7 @@ function Sidebar({ activeView, setActiveView, closeMenu, isGuest = false }) {
       ]
     : navItems.filter((item) => ["dashboard", "flashcards", "quiz", "words", "add-word"].includes(item.id));
   const progressItems = navItems.filter((item) => ["stats", "saved"].includes(item.id));
+  const displayName = user?.name || user?.email || "Account";
 
   function selectView(view) {
     setActiveView(view);
@@ -286,8 +314,29 @@ function Sidebar({ activeView, setActiveView, closeMenu, isGuest = false }) {
     return [active ? "navItem active" : "navItem", locked ? "locked" : ""].filter(Boolean).join(" ");
   }
 
+  function handleSignOut() {
+    closeMenu?.();
+    onSignOut?.();
+  }
+
   return (
     <aside className="sidebar">
+      {!isGuest && user && (
+        <div className="sidebarAccount">
+          <div className="sidebarAccountAvatar">
+            {user.image ? (
+              <img src={user.image} alt="" />
+            ) : (
+              <span>{getUserInitials(user.name, user.email)}</span>
+            )}
+          </div>
+          <div className="sidebarAccountMeta">
+            <strong>{displayName}</strong>
+            {user.email && user.name && <span>{user.email}</span>}
+          </div>
+        </div>
+      )}
+
       <div className="brand">
         <span className="brandIcon"><BookOpen size={16} /></span>
         <span>WordMaster</span>
@@ -318,11 +367,19 @@ function Sidebar({ activeView, setActiveView, closeMenu, isGuest = false }) {
       </nav>
 
       <div className="navGroupLabel">Account</div>
-      <button className={navClass("settings")} type="button" onClick={() => selectView("settings")}>
-        <Settings size={16} />
-        Settings
-        {isGuest && <Lock size={12} className="navLock" />}
-      </button>
+      <nav className="navList">
+        <button className={navClass("settings")} type="button" onClick={() => selectView("settings")}>
+          <Settings size={16} />
+          Settings
+          {isGuest && <Lock size={12} className="navLock" />}
+        </button>
+        {!isGuest && onSignOut && (
+          <button className="navItem navSignOut" type="button" onClick={handleSignOut}>
+            <LogOut size={16} />
+            Sign out
+          </button>
+        )}
+      </nav>
     </aside>
   );
 }
@@ -460,6 +517,18 @@ function FlipFlashcard({ word, flipped, onFlip, onReview, onNext }) {
   return (
     <>
       <div className="flashcardFlip">
+        <button
+          type="button"
+          className="flashcardSpeak"
+          onClick={(event) => {
+            event.stopPropagation();
+            speakUkWord(word.word);
+          }}
+          aria-label={`Pronounce ${word.word}`}
+          title="Listen in UK English"
+        >
+          <Volume2 size={18} />
+        </button>
         <div
           className={flipped ? "flashcardInner flipped" : "flashcardInner"}
           onClick={onFlip}
@@ -478,7 +547,7 @@ function FlipFlashcard({ word, flipped, onFlip, onReview, onNext }) {
             <h2>{word.word}</h2>
             <em>{word.partOfSpeech}</em>
             {word.pronunciation && <p className="pronunciation">{word.pronunciation}</p>}
-            <p className="flashcardHint">Tap to {flipped ? "hide" : "reveal"} meaning</p>
+            <p className="flashcardHint">Tap card to {flipped ? "hide" : "reveal"} meaning</p>
           </div>
           <div className="flashcardFace back">
             <div className="fieldLabel">English</div>
@@ -495,8 +564,6 @@ function FlipFlashcard({ word, flipped, onFlip, onReview, onNext }) {
         </div>
       </div>
       <div className="flashcardControls">
-        <button type="button" onClick={() => speakUkWord(word.word)}><Volume2 size={15} /> Listen</button>
-        <button type="button" onClick={onFlip}>{flipped ? "Hide" : "Reveal"}</button>
         <button type="button" onClick={() => onReview(word, "learning")}><X size={15} /> Don&apos;t know</button>
         <button type="button" className="primary" onClick={() => onReview(word, "mastered")}><Check size={15} /> Got it</button>
         <button type="button" className="primary" onClick={onNext}>Next word</button>
@@ -505,27 +572,26 @@ function FlipFlashcard({ word, flipped, onFlip, onReview, onNext }) {
   );
 }
 
-function Dashboard({ words, stats, setActiveView, onSelect, user, dashboardSearch, setDashboardSearch }) {
+function Dashboard({ words, stats, setActiveView, onSelect, user, dashboardSearch, onSearch, onBrowseAll }) {
   const today = words.slice(0, 3);
   const displayName = user?.name || user?.email || "there";
-
-  function handleDashboardSearch(value) {
-    setDashboardSearch(value);
-    if (value.trim()) {
-      setActiveView("words");
-    }
-  }
 
   return (
     <WindowFrame title="WordMaster - Dashboard" className="dashboardWindow">
       <div className="dashboardLayout">
         <div className="dashboardMain">
           <div className="topSearchRow">
-            <SearchBox value={dashboardSearch} onChange={handleDashboardSearch} placeholder="Search GRE words..." />
-            <div className="avatar">AA</div>
+            <SearchBox value={dashboardSearch} onChange={onSearch} placeholder="Search GRE words..." />
+            <div className="avatar">
+              {user?.image ? (
+                <img src={user.image} alt="" />
+              ) : (
+                getUserInitials(user?.name, user?.email)
+              )}
+            </div>
           </div>
 
-          <h1>Good morning, {displayName}</h1>
+          <h1>Welcome, {displayName}</h1>
           <p className="lead">{stats.new || 0} new words are waiting. Master words as you review them.</p>
 
           <div className="streakCard">
@@ -541,7 +607,7 @@ function Dashboard({ words, stats, setActiveView, onSelect, user, dashboardSearc
 
           <div className="sectionHeader">
             <h3>Today&apos;s words</h3>
-            <button onClick={() => setActiveView("words")}>See all <ChevronRight size={14} /></button>
+            <button type="button" onClick={onBrowseAll}>See all <ChevronRight size={14} /></button>
           </div>
           <div className="todayList">
             {today.map((word, index) => (
@@ -555,7 +621,7 @@ function Dashboard({ words, stats, setActiveView, onSelect, user, dashboardSearc
           <div className="actionRow">
             <button type="button" onClick={() => setActiveView("flashcards")}><GraduationCap size={15} /> Start flashcards</button>
             <button type="button" onClick={() => setActiveView("quiz")}><BookOpen size={15} /> Take a quiz</button>
-            <button type="button" onClick={() => setActiveView("words")}><List size={15} /> Browse all words</button>
+            <button type="button" onClick={onBrowseAll}><List size={15} /> Browse all words</button>
           </div>
         </div>
       </div>
@@ -1101,7 +1167,7 @@ function SettingsPage({ session }) {
       <form className="accountForm" onSubmit={saveProfile}>
         <div className="profilePhotoBlock">
           <div className="profilePhoto">
-            {image ? <img src={image} alt="User profile" /> : <span>{(name || email || "U").slice(0, 2).toUpperCase()}</span>}
+            {image ? <img src={image} alt="User profile" /> : <span>{getUserInitials(name, email)}</span>}
           </div>
           <label className="uploadButton">
             Upload picture
@@ -1242,12 +1308,8 @@ function AuthPanel({ compact = false, featureLabel, initialMode = "login" }) {
 
 function GuestHomePage({ words, stats, selectedWord, setSelectedWord, search, setSearch, onRequireAuth, isMobile }) {
   const filteredWords = useMemo(() => {
-    const query = search.trim().toLowerCase();
-    if (!query) return words;
-    return words.filter((word) =>
-      word.word.toLowerCase().includes(query)
-      || word.meaning?.toLowerCase().includes(query)
-      || word.bangla?.includes(query));
+    if (!search.trim()) return words;
+    return filterAndSortWords(words, { search, status: "all", sort: "rank" });
   }, [search, words]);
 
   useEffect(() => {
@@ -1495,9 +1557,11 @@ export default function App() {
         setError("");
       } catch {
         setError("Using sample words because the API is not reachable yet.");
-        setWords(fallbackWords);
-        setPagination({ total: fallbackWords.length, pages: 1 });
-        setSelectedWord(fallbackWords[0]);
+        const filtered = filterAndSortWords(fallbackWords, { search, status, sort });
+        const paged = paginateWords(filtered, page);
+        setWords(paged.items);
+        setPagination({ total: paged.total, pages: paged.pages });
+        setSelectedWord((current) => paged.items.find((item) => item.id === current?.id) || paged.items[0] || null);
       } finally {
         setLoading(false);
         setListLoading(false);
@@ -1546,6 +1610,15 @@ export default function App() {
     }
   }
 
+  function handleSearch(value) {
+    setDashboardSearch(value);
+    setSearch(value);
+    setPage(1);
+    if (value.trim()) {
+      setActiveView("words");
+    }
+  }
+
   function openAllWords(clearSearch = true) {
     if (clearSearch) {
       setSearch("");
@@ -1558,8 +1631,10 @@ export default function App() {
 
   function changeView(view) {
     if (view === "words") {
-      openAllWords(!dashboardSearch.trim());
-      if (dashboardSearch.trim()) setSearch(dashboardSearch.trim());
+      setStatus("all");
+      setPage(1);
+      setActiveView("words");
+      setMenuOpen(false);
       return;
     }
     setActiveView(view);
@@ -1597,7 +1672,8 @@ export default function App() {
         onSelect={setSelectedWord}
         user={session?.user}
         dashboardSearch={dashboardSearch}
-        setDashboardSearch={setDashboardSearch}
+        onSearch={handleSearch}
+        onBrowseAll={() => openAllWords(true)}
       />
     ),
     flashcards: (
@@ -1649,22 +1725,30 @@ export default function App() {
     <main className="appShell">
       <div className={menuOpen ? "mobileOverlay show" : "mobileOverlay"} onClick={() => setMenuOpen(false)} />
       <div className={menuOpen ? "mobileSidebar show" : "mobileSidebar"}>
-        <Sidebar activeView={activeView} setActiveView={changeView} closeMenu={() => setMenuOpen(false)} />
+        <Sidebar
+          activeView={activeView}
+          setActiveView={changeView}
+          closeMenu={() => setMenuOpen(false)}
+          user={session.user}
+          onSignOut={() => authClient.signOut({ fetchOptions: { onSuccess: () => window.location.reload() } })}
+        />
       </div>
 
       <ToastStack toasts={toasts} />
 
       <div className="appFrame">
-        <Sidebar activeView={activeView} setActiveView={changeView} />
+        <Sidebar
+          activeView={activeView}
+          setActiveView={changeView}
+          user={session.user}
+          onSignOut={() => authClient.signOut({ fetchOptions: { onSuccess: () => window.location.reload() } })}
+        />
         <section className="workspace">
           <div className="sessionBar mobileTopBar">
             <button className="mobileMenuButton mobileMenuButtonInline" type="button" aria-label="Open menu" onClick={() => setMenuOpen(true)}>
               <Menu size={18} />
             </button>
             <div className="sessionBarActions">
-              {session.user?.image && <img src={session.user.image} alt="" />}
-              <span>{session.user?.name || session.user?.email}</span>
-              <button type="button" onClick={() => authClient.signOut({ fetchOptions: { onSuccess: () => window.location.reload() } })}>Sign out</button>
               <ThemeToggle />
             </div>
           </div>
