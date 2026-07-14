@@ -1,0 +1,39 @@
+{
+  "expo": {
+    "name": "WordMaster",
+    "slug": "word-master",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "wordmaster",
+    "userInterfaceStyle": "automatic",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.wordmaster.gre",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "com.wordmaster.gre",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#111214"
+      },
+      "permissions": []
+    },
+    "extra": {
+      "eas": {
+        "projectId": "8377578c-154a-4f02-a2cf-317819018388"
+      }
+    },
+    "web": {
+      "bundler": "metro"
+    },
+    "owner": "pathikroy"
+  }
+}

@@ -1,27 +1,52 @@
 {
-  "name": "create-some-figma-designs-of-gre",
+  "name": "word-master-mobile",
   "version": "1.0.0",
-  "description": "GRE WordMaster app with Next.js frontend, Next.js API routes, and MongoDB database.",
-  "main": "index.js",
+  "description": "Cross-platform React Native GRE vocabulary app.",
+  "main": "expo/AppEntry",
+  "type": "module",
   "scripts": {
-    "dev": "next dev web -p 3000",
-    "dev:web": "next dev web -p 3000",
-    "build": "next build web",
-    "start": "next start web -p 3000",
-    "start:web": "next start web -p 3000"
+    "dev": "expo start",
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "api": "node server/index.js",
+    "dev:api": "node server/index.js",
+    "start:api": "node server/index.js",
+    "doctor": "npx expo-doctor",
+    "build:android": "eas build --platform android --profile production",
+    "build:ios": "eas build --platform ios --profile production",
+    "build:all": "eas build --platform all --profile production",
+    "submit:android": "eas submit --platform android --profile production",
+    "submit:ios": "eas submit --platform ios --profile production"
   },
-  "keywords": [],
+  "keywords": [
+    "gre",
+    "vocabulary",
+    "react-native",
+    "expo"
+  ],
   "author": "",
   "license": "ISC",
-  "type": "module",
   "dependencies": {
-    "@better-auth/mongo-adapter": "^1.6.11",
-    "better-auth": "^1.6.11",
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.5",
     "dotenv": "^17.4.2",
-    "lucide-react": "^1.16.0",
+    "expo": "~56.0.15",
+    "expo-speech": "^56.0.3",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "lucide-react-native": "^1.17.0",
     "mongodb": "^7.2.0",
-    "next": "^16.2.6",
-    "react": "^19.2.6",
-    "react-dom": "^19.2.6"
-  }
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-native": "^0.85.3",
+    "react-native-svg": "15.15.4",
+    "react-native-web": "^0.21.2"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.28.5"
+  },
+  "private": true
 }

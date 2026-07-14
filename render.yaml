@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: wordmaster-api
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm run start:api
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 4000
+      - key: MONGODB_URI
+        sync: false
+      - key: MONGODB_DB
+        value: gre_word_master
+      - key: MONGODB_COLLECTION
+        value: wordlist
+      - key: JWT_SECRET
+        generateValue: true
+      - key: EMAIL_FROM
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false

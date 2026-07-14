@@ -75,6 +75,7 @@ export function normalizeWord(doc, index = 0) {
         antonyms,
         example: String(pick(doc, ["example", "sentence", "exampleSentence"], "")),
         status,
+        saved: Boolean(pick(doc, ["saved", "bookmarked", "favorite", "favourite"], false)),
         frequencyRank: Number(pick(doc, ["frequencyRank", "rank", "serial", "index"], index + 1)),
         raw: doc
     };
@@ -117,6 +118,7 @@ export function normalizeWordInput(body) {
             partOfSpeech: String(body.partOfSpeech || body.pos || "").trim() || "adjective",
             pronunciation: String(body.pronunciation || "").trim(),
             example: String(body.example || "").trim(),
+            saved: Boolean(body.saved),
             status: normalizeStatusValue(body.status || "new"),
             createdAt: new Date(),
             updatedAt: new Date()
